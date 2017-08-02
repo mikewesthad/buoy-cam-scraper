@@ -1,11 +1,12 @@
 const request = require("request");
 const fs = require("fs");
 const schedule = require("node-schedule");
+const isThere = require("is-there");
 
 const endpoint = "http://www.ndbc.noaa.gov/buoycam.php?station=";
 const stations = require("../data/buoycam-id-list");
 
-function scrapStations() {
+function scrapeStations() {
     const time = Date.now();
     for (const station of stations) {
         request
@@ -15,5 +16,10 @@ function scrapStations() {
     }
 }
 
-fs.mkdirSync("../scraped-images");
-const job = schedule.scheduleJob("18 * * * *", scrapStations);
+// First run
+if (!isThere("../scraped-images")) fs.mkdirSync("../scraped-images");
+scrapeStations();
+
+// Schedule to run every hour
+const currentMinutes = new Date().getMinutes();
+const job = schedule.scheduleJob(`${currentMinutes} * * * *`, scrapeStations);
