@@ -1,6 +1,6 @@
 # Buoy Cam Scraper
 
-A scraper to pull images from NBDC's network of buoys that have cam feeds ([link](http://www.ndbc.noaa.gov/buoycams.shtml)), lonely sensors that constantly monitor our seas, air and atmosphere. The cameras are updated on an hourly basis, so the script is set to scrap the feeds whenever the clock reads XX:18.
+A scraper to pull images from NBDC's network of buoys that have cam feeds ([link](http://www.ndbc.noaa.gov/buoycams.shtml)), lonely sensors that constantly monitor our seas, air and atmosphere. The cameras are updated on an hourly basis, so the script is set to scrape the feeds every hour from the time it starts running.
 
 ![](images/41424-optimize.gif)
 ![](images/51001-optimize.gif)
