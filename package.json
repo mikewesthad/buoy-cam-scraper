@@ -1,0 +1,24 @@
+{
+  "name": "buoy-cam-scraper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin/scrape-cams.js",
+  "dependencies": {
+    "node-schedule": "^1.2.3",
+    "request": "^2.81.0",
+    "tesseract.js": "^1.0.10",
+    "tesseract.js-core": "^1.0.2"
+  },
+  "devDependencies": {
+    "change-case": "^3.0.1",
+    "cheerio": "^1.0.0-rc.2",
+    "node-base64-image": "^1.0.4",
+    "request-promise": "^4.2.1"
+  },
+  "scripts": {
+    "gather-station-info": "cd bin && node ./gather-station-info.js",
+    "scrape-cams": "cd bin && node ./scrape-cams.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
