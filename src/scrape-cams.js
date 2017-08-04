@@ -71,14 +71,14 @@ async function scrapeStations() {
         const whitePercent = imageUtils.getPercentWhite(image);
         if (whitePercent > 0.95) {
             console.log(`\t${stationId}: No buoy data. Skipping...`);
-            return;
+            continue;
         }
 
         // Check caption against last caption - this is more reliable than image diff check!
         const caption = await parseCaption(image);
         if (lastImages[stationId] && lastImages[stationId].caption === caption) {
             console.log(`\t${stationId}: Caption matches last caption. Skipping...`);
-            return;
+            continue;
         }
 
         // // Check image against last image saved - this may end up being useless
@@ -87,7 +87,7 @@ async function scrapeStations() {
         //     const diff = jimp.diff(lastImage, image, 0);
         //     if (diff.percent === 0) {
         //         console.log(`\t${stationId}: Image matches last scraped. Skipping...`);
-        //         return;
+        //         continue;
         //     } 
         // }
         
