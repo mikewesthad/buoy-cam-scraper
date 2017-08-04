@@ -99,4 +99,6 @@ async function scrapeStations() {
             .write(imagePath);
         lastImages[stationId] = {imagePath, timestamp, caption};
     }
+
+    console.log(`Scraping completed in: ${(Date.now() - timestamp) / 1000 / 60} min.\n\n`);
 }
