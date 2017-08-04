@@ -3,6 +3,7 @@ const cheerio = require("cheerio");
 const changeCase = require("change-case");
 const fs = require("fs");
 const base64 = require("node-base64-image");
+const jimp = require("jimp");
 const {URL} = require("url");
 const {promisify} = require("util");
 const encode = promisify(base64.encode);
