@@ -17,8 +17,8 @@
     "request-promise": "^4.2.1"
   },
   "scripts": {
-    "gather-station-info": "cd bin && node ./gather-station-info.js",
-    "scrape-cams": "cd bin && node ./scrape-cams.js"
+    "gather-station-info": "cd src && node ./gather-station-info.js",
+    "scrape-cams": "cd src && node ./scrape-cams.js"
   },
   "author": "",
   "license": "ISC"
