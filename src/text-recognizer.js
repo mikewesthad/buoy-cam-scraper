@@ -1,4 +1,4 @@
-const Tesseract = require("Tesseract.js");
+const Tesseract = require("tesseract.js");
 
 module.exports = class EnglishTesseract {
     constructor() {
