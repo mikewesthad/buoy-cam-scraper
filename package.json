@@ -6,6 +6,7 @@
   "dependencies": {
     "is-there": "^4.4.2",
     "jimp": "^0.2.28",
+    "moment": "^2.18.1",
     "node-schedule": "^1.2.3",
     "tesseract.js": "^1.0.10",
     "tesseract.js-core": "^1.0.2"
@@ -19,7 +20,7 @@
   "scripts": {
     "gather-station-info": "cd src && node ./gather-station-info.js",
     "scrape-cams": "cd src && node ./scrape-cams.js",
-    "clean-data": "cd src && node ./clean-exisiting-data.js" 
+    "clean-data": "cd src && node ./clean-exisiting-data.js"
   },
   "author": "",
   "license": "ISC"

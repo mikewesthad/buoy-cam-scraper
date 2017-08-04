@@ -3,32 +3,36 @@ const path = require("path");
 const schedule = require("node-schedule");
 const isThere = require("is-there");
 const jimp = require("jimp");
-const parseFilename = require("./utils").parseFilename;
+const {parseFilename, parseBuoyDate} = require("./utils");
 const imageUtils = require("./image-utils");
 const stations = require("../data/buoycam-id-list");
 const TextRecognizer = require("./text-recognizer");
+const moment = require("moment");
 
 const endpoint = "http://www.ndbc.noaa.gov/buoycam.php";
 const outputDirectory = path.join(__dirname, "..", "scraped-images");
-let lastImages = {};
 const textRecognizer = new TextRecognizer();
 
 // Create folder for output, if none exists
 if (!isThere(outputDirectory)) fs.mkdirSync(outputDirectory);
 
-// Init
-getLatestImages()
-    .then((latestImages) => {
-        lastImages = latestImages;
+// Loop over the files, finding the most recent timestamp for each station
+const lastTimestamps = {};
+const filenames = fs.readdirSync(outputDirectory);
+for (const filename of filenames) {
+    const {utcFromBuoy, utcSaved, stationId} = parseFilename(filename);
+    if (lastTimestamps[stationId] === undefined || (utcFromBuoy > lastTimestamps[stationId])) {
+        lastTimestamps[stationId] = utcFromBuoy;
+    }
+}
 
-        // First run
-        scrapeStations();
+// First run
+scrapeStations();
 
-        // Schedule to run every hour
-        const currentMinutes = new Date().getMinutes();
-        const job = schedule.scheduleJob(`${currentMinutes} * * * *`, scrapeStations);
-    })
-    .catch(console.log);
+// Schedule to run every hour
+const currentMinutes = new Date().getMinutes();
+const job = schedule.scheduleJob(`${currentMinutes} * * * *`, scrapeStations);
+
 
 async function parseCaption(image) {
     // Read the bottom bar of text from the image
@@ -37,33 +41,13 @@ async function parseCaption(image) {
     return textData.text.trim();
 }
 
-async function getLatestImages() {
-    const latestImages = {};
-    const filenames = fs.readdirSync(outputDirectory);
-    // Loop over the files, finding the most recent timestamp for each station
-    for (const filename of filenames) {
-        const {timestamp, stationId} = parseFilename(filename);
-        if (!latestImages.stationId || (timestamp > latestImages[stationId].timestamp)) {
-            latestImages[stationId] = {
-                imagePath: path.join(outputDirectory, filename),
-                timestamp
-            };
-        }
-    }
-    // Load the last image for each station into memory
-    for (const [stationId, lastImage] of Object.entries(latestImages)) {
-        const image = await jimp.read(lastImage.imagePath);
-        lastImage.caption = await parseCaption(image);
-    }
-    return latestImages;
-}
-
 async function scrapeStations() {
-    const timestamp = Date.now();
-    console.log(`Scraping at ${timestamp}`);
+    const startTime = Date.now();
+    console.log(`Scraping at ${moment().toString()}`);
 
     // Attempt to optimize for raspberry pi's limited resources... run this loop in sequence
     for (const stationId of stations) {
+        const utcSaved = Date.now();
         const image = await jimp.read(`${endpoint}?station=${stationId}`);
 
         // Check if the image is a white screen - indicates no recent buoy data. If so,
@@ -76,29 +60,20 @@ async function scrapeStations() {
 
         // Check caption against last caption - this is more reliable than image diff check!
         const caption = await parseCaption(image);
-        if (lastImages[stationId] && lastImages[stationId].caption === caption) {
+        const utcFromBuoy = parseBuoyDate(caption);
+        if (lastTimestamps[stationId] && lastTimestamps[stationId] === utcFromBuoy) {
             console.log(`\t${stationId}: Caption matches last caption. Skipping...`);
             continue;
         }
-
-        // // Check image against last image saved - this may end up being useless
-        // if (lastImages[stationId]) {
-        //     const lastImage = lastImages[stationId].image;
-        //     const diff = jimp.diff(lastImage, image, 0);
-        //     if (diff.percent === 0) {
-        //         console.log(`\t${stationId}: Image matches last scraped. Skipping...`);
-        //         continue;
-        //     } 
-        // }
         
         // All checks passed, save that image
         console.log(`\t${stationId}: New image. Saving...`);
-        const imagePath = path.join(outputDirectory, `${timestamp}-${stationId}.jpg`);
+        const imagePath = path.join(outputDirectory, `${utcFromBuoy}-${utcSaved}-${stationId}.jpg`);
         image
             .quality(75) // Match quality to what is returned from the server
             .write(imagePath);
-        lastImages[stationId] = {imagePath, timestamp, caption};
+        lastTimestamps[stationId] = utcFromBuoy;
     }
 
-    console.log(`Scraping completed in: ${(Date.now() - timestamp) / 1000 / 60} min.\n\n`);
+    console.log(`Scraping completed in: ${(Date.now() - startTime) / 1000 / 60} min.\n\n`);
 }
