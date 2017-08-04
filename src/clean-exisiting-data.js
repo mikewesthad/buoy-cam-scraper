@@ -7,6 +7,19 @@ const outputDirectory = path.join(__dirname, "..", "scraped-images");
 const dataDirectory = path.join(__dirname, "..", "data");
 const parseFilename = require("./utils").parseFilename;
 
+clean()
+    .then(() => console.log("Done!"))
+    .catch(console.log);
+
+async function clean() {
+    console.log("Removing empty (white) images!");
+    await removeEmptyImages();
+    console.log("Removing duplicates!");
+    await removeDuplicates();
+    console.log("Regenerating data!");
+    await regenerateData();
+}
+
 async function removeDuplicates() {
     const allImages = {};
     const filenames = fs.readdirSync(outputDirectory);
@@ -71,15 +84,3 @@ async function regenerateData() {
     fs.writeFileSync(path.join(dataDirectory, "scraped-data.json"), JSON.stringify(data, null, 2));
     textRecognizer.terminate();
 }
-
-removeDuplicates()
-    .then(() => console.log("Duplicates removed!"))
-    .catch(console.error);
-
-removeEmptyImages()
-    .then(() => console.log("Empty (white) images removed!"))
-    .catch(console.error);
-
-regenerateData()
-    .then(() => console.log("Data regenerated!"))
-    .catch(console.error);

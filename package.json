@@ -18,7 +18,8 @@
   },
   "scripts": {
     "gather-station-info": "cd src && node ./gather-station-info.js",
-    "scrape-cams": "cd src && node ./scrape-cams.js"
+    "scrape-cams": "cd src && node ./scrape-cams.js",
+    "clean-data": "cd src && node ./clean-exisiting-data.js" 
   },
   "author": "",
   "license": "ISC"
