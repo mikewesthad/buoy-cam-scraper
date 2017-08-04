@@ -62,43 +62,41 @@ async function scrapeStations() {
     const timestamp = Date.now();
     console.log(`Scraping at ${timestamp}`);
 
+    // Attempt to optimize for raspberry pi's limited resources... run this loop in sequence
     for (const stationId of stations) {
-        jimp
-            .read(`${endpoint}?station=${stationId}`)
-            .then(async (image) => {
-                // Check if the image is a white screen - indicates no recent buoy data. If so,
-                // skip it.
-                const whitePercent = imageUtils.getPercentWhite(image);
-                if (whitePercent > 0.95) {
-                    console.log(`\t${stationId}: No buoy data. Skipping...`);
-                    return;
-                }
+        const image = await jimp.read(`${endpoint}?station=${stationId}`);
 
-                // Check caption against last caption - this is more reliable than image diff check!
-                const caption = await parseCaption(image);
-                if (lastImages[stationId] && lastImages[stationId].caption === caption) {
-                    console.log(`\t${stationId}: Caption matches last caption. Skipping...`);
-                    return;
-                }
+        // Check if the image is a white screen - indicates no recent buoy data. If so,
+        // skip it.
+        const whitePercent = imageUtils.getPercentWhite(image);
+        if (whitePercent > 0.95) {
+            console.log(`\t${stationId}: No buoy data. Skipping...`);
+            return;
+        }
 
-                // // Check image against last image saved - this may end up being useless
-                // if (lastImages[stationId]) {
-                //     const lastImage = lastImages[stationId].image;
-                //     const diff = jimp.diff(lastImage, image, 0);
-                //     if (diff.percent === 0) {
-                //         console.log(`\t${stationId}: Image matches last scraped. Skipping...`);
-                //         return;
-                //     } 
-                // }
-                
-                // All checks passed, save that image
-                console.log(`\t${stationId}: New image. Saving...`);
-                const imagePath = path.join(outputDirectory, `${timestamp}-${stationId}.jpg`);
-                image
-                    .quality(75) // Match quality to what is returned from the server
-                    .write(imagePath);
-                lastImages[stationId] = {imagePath, timestamp, caption};
-            })
-            .catch(console.log);
+        // Check caption against last caption - this is more reliable than image diff check!
+        const caption = await parseCaption(image);
+        if (lastImages[stationId] && lastImages[stationId].caption === caption) {
+            console.log(`\t${stationId}: Caption matches last caption. Skipping...`);
+            return;
+        }
+
+        // // Check image against last image saved - this may end up being useless
+        // if (lastImages[stationId]) {
+        //     const lastImage = lastImages[stationId].image;
+        //     const diff = jimp.diff(lastImage, image, 0);
+        //     if (diff.percent === 0) {
+        //         console.log(`\t${stationId}: Image matches last scraped. Skipping...`);
+        //         return;
+        //     } 
+        // }
+        
+        // All checks passed, save that image
+        console.log(`\t${stationId}: New image. Saving...`);
+        const imagePath = path.join(outputDirectory, `${timestamp}-${stationId}.jpg`);
+        image
+            .quality(75) // Match quality to what is returned from the server
+            .write(imagePath);
+        lastImages[stationId] = {imagePath, timestamp, caption};
     }
 }
