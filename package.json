@@ -5,6 +5,7 @@
   "main": "bin/scrape-cams.js",
   "dependencies": {
     "is-there": "^4.4.2",
+    "jimp": "^0.2.28",
     "node-schedule": "^1.2.3",
     "request": "^2.81.0",
     "tesseract.js": "^1.0.10",
