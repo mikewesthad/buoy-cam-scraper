@@ -46,15 +46,14 @@ async function getLatestImages() {
         if (!latestImages.stationId || (timestamp > latestImages[stationId].timestamp)) {
             latestImages[stationId] = {
                 imagePath: path.join(outputDirectory, filename),
-                timestamp,
-                image: null
+                timestamp
             };
         }
     }
     // Load the last image for each station into memory
     for (const [stationId, lastImage] of Object.entries(latestImages)) {
-        lastImage.image = await jimp.read(lastImage.imagePath);
-        lastImage.caption = await parseCaption(lastImage.image);
+        const image = await jimp.read(lastImage.imagePath);
+        lastImage.caption = await parseCaption(image);
     }
     return latestImages;
 }
@@ -98,7 +97,7 @@ async function scrapeStations() {
                 image
                     .quality(75) // Match quality to what is returned from the server
                     .write(imagePath);
-                lastImages[stationId] = {imagePath, timestamp, image, caption};
+                lastImages[stationId] = {imagePath, timestamp, caption};
             })
             .catch(console.log);
     }
