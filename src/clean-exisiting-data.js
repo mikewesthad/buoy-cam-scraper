@@ -2,11 +2,11 @@ const fs = require("fs");
 const path = require("path");
 const jimp = require("jimp");
 const moment = require("moment");
-const TextRecognizer = require("./text-recognizer");
-const imageUtils = require("./image-utils");
+const TextRecognizer = require("./ocr/text-recognizer");
+const {getPercentWhite, areExactlyEqual} = require("./utilities/image-utils");
 const outputDirectory = path.join(__dirname, "..", "scraped-images");
 const dataDirectory = path.join(__dirname, "..", "data");
-const parseFilename = require("./utils").parseFilename;
+const {parseFilename} = require("./utilities/utils");
 
 clean()
     .then(() => console.log("Done!"))
@@ -61,7 +61,7 @@ async function removeEmptyImages() {
     for (const filename of filenames) {
         const img = await jimp.read(path.join(outputDirectory, filename));
         // Check if the image is a white screen - indicates no recent buoy data. If so, delete.
-        const whitePercent = imageUtils.getPercentWhite(img);
+        const whitePercent = getPercentWhite(img);
         if (whitePercent > 0.95) {
             console.log(`${filename}: No buoy data. Deleting...`);
             fs.unlink(path.join(outputDirectory, filename), err => console.log);
@@ -132,7 +132,7 @@ async function removeDuplicatesByPixels() {
         let lastImage = await jimp.read(path.join(outputDirectory, images[0].filename));
         for (let i = 1; i < images.length; i++) {
             let image = await jimp.read(path.join(outputDirectory, images[i].filename));
-            const areSame = imageUtils.areExactlyEqual(lastImage, image);
+            const areSame = areExactlyEqual(lastImage, image);
             if (areSame) {
                 console.log(`${images[i].filename}: Duplicate detected. Deleting...`);
                 fs.unlink(path.join(outputDirectory, images[i].filename), err => console.log);

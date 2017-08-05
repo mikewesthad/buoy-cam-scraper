@@ -3,10 +3,10 @@ const path = require("path");
 const schedule = require("node-schedule");
 const isThere = require("is-there");
 const jimp = require("jimp");
-const {parseFilename, parseBuoyDate} = require("./utils");
-const imageUtils = require("./image-utils");
+const {parseFilename, parseBuoyDate} = require("./utilities/utils");
+const {getPercentWhite, getBuoyCaptionImage} = require("./utilities/image-utils");
 const stations = require("../data/buoycam-id-list");
-const TextRecognizer = require("./text-recognizer");
+const TextRecognizer = require("./ocr/text-recognizer");
 const moment = require("moment");
 
 const endpoint = "http://www.ndbc.noaa.gov/buoycam.php";
@@ -27,19 +27,11 @@ for (const filename of filenames) {
 }
 
 // First run
-scrapeStations();
+scrapeStations().catch(console.error);
 
 // Schedule to run every hour
 const currentMinutes = new Date().getMinutes();
 const job = schedule.scheduleJob(`${currentMinutes} * * * *`, scrapeStations);
-
-
-async function parseCaption(image) {
-    // Read the bottom bar of text from the image
-    const bar = image.clone().crop(0, image.bitmap.height - 30, image.bitmap.width, 30);
-    const textData = await textRecognizer.recognizeText(bar.bitmap);
-    return textData.text.trim();
-}
 
 async function scrapeStations() {
     const startTime = Date.now();
@@ -52,15 +44,16 @@ async function scrapeStations() {
 
         // Check if the image is a white screen - indicates no recent buoy data. If so,
         // skip it.
-        const whitePercent = imageUtils.getPercentWhite(image);
+        const whitePercent = getPercentWhite(image);
         if (whitePercent > 0.95) {
             console.log(`\t${stationId}: No buoy data. Skipping...`);
             continue;
         }
 
         // Check caption against last caption - this is more reliable than image diff check!
-        const caption = await parseCaption(image);
-        const utcFromBuoy = parseBuoyDate(caption);
+        const captionImage = getBuoyCaptionImage(image);
+        const caption = await textRecognizer.recognizeText(captionImage.bitmap);
+        const utcFromBuoy = parseBuoyDate(caption.text.trim());
         if (lastTimestamps[stationId] && lastTimestamps[stationId] === utcFromBuoy) {
             console.log(`\t${stationId}: Caption matches last caption. Skipping...`);
             continue;
