@@ -19,3 +19,15 @@ exports.areExactlyEqual = function areExactlyEqual(img1, img2) {
     }
     return true;
 }
+
+/**
+ * The caption in the buoy images is reliably placed in the (almost) center at the bottom of the
+ * buoy images. 
+ */
+exports.getBuoyCaptionImage = function getBuoyCaptionImage(image) {
+    const cx = image.bitmap.width / 2;
+    const w = 700;
+    const h = 30;
+    const croppedImage = image.clone().crop(cx - (w / 2), image.bitmap.height - h, w, h);
+    return croppedImage;
+}
