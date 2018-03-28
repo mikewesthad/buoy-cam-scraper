@@ -31,17 +31,13 @@ The UTC time when the photo was taken by the buoy is parsed via OCR using tesser
 
 ## Performance
 
-The code is written to be run on a Raspberry Pi. On my Raspberry Pi 2B, it takes about ~30 minutes to scrape images from all the buoy cams. The bulk of the time is spent on OCR. On a modern laptop, it takes <1 minute.
+The code is written to be run on a Raspberry Pi. On a Raspberry Pi 3, it takes about ~2 minutes to scrape images from all the buoy cams. The bulk of the time is spent on OCR.
 
 ## Data
 
 The data folder contains some scraped meta information:
 
-- buoycam-id-list.json - a list of buoy IDs that have cameras, hand collected on 8/1/17
-- buoycam-info.json - meta information about the buoy cams including: name, lat-long location and a base 64 image of the buoy. Scraped on 8/1/17 using `npm run gather-station-info`.
+* buoycam-id-list.json - a list of buoy IDs that have cameras, hand collected on 8/1/17
+* buoycam-info.json - meta information about the buoy cams including: name, lat-long location and a base 64 image of the buoy. Scraped on 3/27/18 using `npm run gather-station-info`.
 
-## To Do
-
-- Improve performance
-- Extra error handling
-- Post visualizations
+Note: last scraped data is stored with date appended to filenames.
