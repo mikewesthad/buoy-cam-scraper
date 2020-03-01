@@ -1,8 +1,8 @@
 const fs = require("fs");
 const path = require("path");
-const schedule = require("node-schedule");
 const isThere = require("is-there");
 const jimp = require("jimp");
+const CronJob = require("cron").CronJob;
 const { parseFilename, parseBuoyDate } = require("./utilities/utils");
 const { getPercentWhite, getBuoyCaptionImage } = require("./utilities/image-utils");
 const TextRecognizer = require("./ocr/text-recognizer");
@@ -26,11 +26,11 @@ for (const filename of filenames) {
   }
 }
 
-// Schedule to run every hour at 30 minutes.  Note: schedule is buggy on the latest PI3, so this was
-// the best method that didn't generate duplicate tasks
-const rule = new schedule.RecurrenceRule();
-rule.minute = 30;
-const job = schedule.scheduleJob(rule, scrapeStations);
+// Schedule every 30 minutes. The syntax is in the form:
+//  Seconds, Minutes, Hours, Day of Month, Months, Day of Week
+const job = new CronJob("0 */30 * * * *", scrapeStations);
+job.start();
+scrapeStations();
 
 async function scrapeStations() {
   const startTime = Date.now();
