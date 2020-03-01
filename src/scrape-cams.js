@@ -5,11 +5,11 @@ const isThere = require("is-there");
 const jimp = require("jimp");
 const { parseFilename, parseBuoyDate } = require("./utilities/utils");
 const { getPercentWhite, getBuoyCaptionImage } = require("./utilities/image-utils");
-const stations = require("../data/buoycam-id-list");
 const TextRecognizer = require("./ocr/text-recognizer");
 const moment = require("moment");
+const { buoycamEndpoint } = require("./endpoints");
+const { getStationIds } = require("./get-buoycam-station-info");
 
-const endpoint = "http://www.ndbc.noaa.gov/buoycam.php";
 const outputDirectory = path.join(__dirname, "..", "scraped-images");
 const textRecognizer = new TextRecognizer();
 
@@ -20,7 +20,7 @@ if (!isThere(outputDirectory)) fs.mkdirSync(outputDirectory);
 const lastTimestamps = {};
 const filenames = fs.readdirSync(outputDirectory);
 for (const filename of filenames) {
-  const { utcFromBuoy, utcSaved, stationId } = parseFilename(filename);
+  const { utcFromBuoy, stationId } = parseFilename(filename);
   if (lastTimestamps[stationId] === undefined || utcFromBuoy > lastTimestamps[stationId]) {
     lastTimestamps[stationId] = utcFromBuoy;
   }
@@ -28,7 +28,6 @@ for (const filename of filenames) {
 
 // Schedule to run every hour at 30 minutes.  Note: schedule is buggy on the latest PI3, so this was
 // the best method that didn't generate duplicate tasks
-const currentMinutes = new Date().getMinutes();
 const rule = new schedule.RecurrenceRule();
 rule.minute = 30;
 const job = schedule.scheduleJob(rule, scrapeStations);
@@ -37,11 +36,13 @@ async function scrapeStations() {
   const startTime = Date.now();
   console.log(`Scraping at ${moment().toString()}`);
 
+  const ids = await getStationIds();
+
   // Attempt to optimize for raspberry pi's limited resources... run this loop in sequence
-  for (const stationId of stations) {
+  for (const stationId of ids) {
     try {
       const utcSaved = Date.now();
-      const image = await jimp.read(`${endpoint}?station=${stationId}`);
+      const image = await jimp.read(`${buoycamEndpoint}?station=${stationId}`);
 
       // Check if the image is a white screen - indicates no recent buoy data. If so,
       // skip it.
