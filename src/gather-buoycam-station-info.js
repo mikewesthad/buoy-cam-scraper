@@ -15,7 +15,11 @@ async function main() {
     }
 
     // Dump the whole station listing, in case it's useful.
-    fs.writeFileSync(outAllInfoPath, JSON.stringify(data, null, 2));
+    const stationInfoMap = {};
+    data.forEach(({ id, ...info }) => {
+      stationInfoMap[id] = info;
+    });
+    fs.writeFileSync(outAllInfoPath, JSON.stringify(stationInfoMap, null, 2));
 
     // Filter out just the IDs.
     const ids = data.map(stationInfo => parseInt(stationInfo.id, 10));
