@@ -13,18 +13,22 @@ const { getStationIds } = require("./get-buoycam-station-info");
 const outputDirectory = path.join(__dirname, "..", "scraped-images");
 const textRecognizer = new TextRecognizer();
 
-// Create folder for output, if none exists
+// Create folder for output, if none exists.
 if (!isThere(outputDirectory)) fs.mkdirSync(outputDirectory);
 
-// Loop over the files, finding the most recent timestamp for each station
+// Loop over the files, finding the most recent timestamp for each station.
 const lastTimestamps = {};
 const filenames = fs.readdirSync(outputDirectory);
-for (const filename of filenames) {
-  const { utcFromBuoy, stationId } = parseFilename(filename);
-  if (lastTimestamps[stationId] === undefined || utcFromBuoy > lastTimestamps[stationId]) {
-    lastTimestamps[stationId] = utcFromBuoy;
-  }
-}
+filenames.forEach(filename => {
+  const stationId = parseInt(filename);
+  const images = fs.readdirSync(path.join(outputDirectory, filename));
+  images.forEach(imageName => {
+    const { utcFromBuoy } = parseFilename(imageName);
+    if (lastTimestamps[stationId] === undefined || utcFromBuoy > lastTimestamps[stationId]) {
+      lastTimestamps[stationId] = utcFromBuoy;
+    }
+  });
+});
 
 // Schedule every 30 minutes. The syntax is in the form:
 //  Seconds, Minutes, Hours, Day of Month, Months, Day of Week
@@ -38,14 +42,13 @@ async function scrapeStations() {
 
   const ids = await getStationIds();
 
-  // Attempt to optimize for raspberry pi's limited resources... run this loop in sequence
+  // Attempt to optimize for raspberry pi's limited resources... run this loop in sequence.
   for (const stationId of ids) {
     try {
       const utcSaved = Date.now();
       const image = await jimp.read(`${buoycamEndpoint}?station=${stationId}`);
 
-      // Check if the image is a white screen - indicates no recent buoy data. If so,
-      // skip it.
+      // Check if the image is a white screen - indicates no recent buoy data. If so, skip it.
       const whitePercent = getPercentWhite(image);
       if (whitePercent > 0.95) {
         console.log(`\t${stationId}: No buoy data. Skipping...`);
@@ -61,11 +64,15 @@ async function scrapeStations() {
         continue;
       }
 
-      // All checks passed, save that image
+      // All checks passed, save that image.
       console.log(`\t${stationId}: New image. Saving...`);
-      const imagePath = path.join(outputDirectory, `${utcFromBuoy}-${utcSaved}-${stationId}.jpg`);
+      const imagePath = path.join(
+        outputDirectory,
+        stationId,
+        `${utcFromBuoy}-${utcSaved}-${stationId}.jpg`
+      );
       image
-        .quality(75) // Match quality to what is returned from the server
+        .quality(75) // Match quality to what is returned from the server.
         .write(imagePath);
       lastTimestamps[stationId] = utcFromBuoy;
     } catch (err) {
