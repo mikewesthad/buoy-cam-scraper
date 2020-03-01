@@ -33,6 +33,10 @@ The UTC time when the photo was taken by the buoy is parsed via OCR using tesser
 
 The code is written to be run on a Raspberry Pi. On a Raspberry Pi 3, it takes about ~2 minutes to scrape images from all the buoy cams. The bulk of the time is spent on OCR.
 
+## Info
+
+See the info about the NBDC web APIs [here](https://www.ndbc.noaa.gov/docs/ndbc_web_data_guide.pdf).
+
 ## Data
 
 The data folder contains some scraped meta information:
