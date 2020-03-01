@@ -2,11 +2,10 @@ const fs = require("fs");
 const path = require("path");
 const isThere = require("is-there");
 const jimp = require("jimp");
-const CronJob = require("cron").CronJob;
+const moment = require("moment");
 const { parseFilename, parseBuoyDate } = require("./utilities/utils");
 const { getPercentWhite, getBuoyCaptionImage } = require("./utilities/image-utils");
 const TextRecognizer = require("./ocr/text-recognizer");
-const moment = require("moment");
 const { buoycamEndpoint } = require("./endpoints");
 const { getStationIds } = require("./get-buoycam-station-info");
 
@@ -30,13 +29,7 @@ filenames.forEach(filename => {
   });
 });
 
-// Schedule every 30 minutes. The syntax is in the form:
-//  Seconds, Minutes, Hours, Day of Month, Months, Day of Week
-const job = new CronJob("0 */30 * * * *", scrapeStations);
-job.start();
-scrapeStations();
-
-async function scrapeStations() {
+async function scrapeCams() {
   const startTime = Date.now();
   console.log(`Scraping at ${moment().toString()}`);
 
@@ -82,3 +75,5 @@ async function scrapeStations() {
 
   console.log(`Scraping completed in: ${(Date.now() - startTime) / 1000 / 60} min.\n\n`);
 }
+
+module.exports = scrapeCams;

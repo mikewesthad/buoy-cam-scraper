@@ -13,7 +13,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "scrape-cams": "cd src && node ./scrape-cams.js",
+    "start": "node src/index.js",
     "clean-data": "cd src && node ./clean-exisiting-data.js"
   },
   "prettier": {
