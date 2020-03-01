@@ -18,13 +18,13 @@ npm install
 Open up a terminal in buoy-cam-scraper/ and run:
 
 ```
-npm run scrape-cams
+npm run start
 ```
 
-This will start reading and capturing new images from the buoy cameras and saving them to scraped-images. The script will re-scrape every 1 hour. Each file is named in the following format:
+This will start reading and capturing new images from the buoy cameras and saving them to `scraped-images/`. The script will re-scrape every 30 minutes. Each file is named in the following format:
 
 ```
-[UTC ms when photo was taken by buoy]-[UTC ms when photo was downloaded]-[ID of buoy].jpg
+scraped-images/[buoy ID]/[UTC ms when photo was taken by buoy]-[UTC ms when photo was downloaded]-[buoy ID].jpg
 ```
 
 The UTC time when the photo was taken by the buoy is parsed via OCR using tesseract.js. Images that have no data (i.e. all white images) and images that have already been downloaded will be skipped.
@@ -39,9 +39,4 @@ See the info about the NBDC web APIs [here](https://www.ndbc.noaa.gov/docs/ndbc_
 
 ## Data
 
-The data folder contains some scraped meta information:
-
-* buoycam-id-list.json - a list of buoy IDs that have cameras, hand collected on 8/1/17
-* buoycam-info.json - meta information about the buoy cams including: name, lat-long location and a base 64 image of the buoy. Scraped on 3/27/18 using `npm run gather-station-info`.
-
-Note: last scraped data is stored with date appended to filenames.
+The data folder contains some scraped meta information in buoycam-info.json - meta information about the buoy cams including: name, GPS location, image width, image height.
