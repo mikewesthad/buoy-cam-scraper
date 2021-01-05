@@ -4,7 +4,7 @@
   "description": "",
   "main": "bin/scrape-cams.js",
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "cron": "^1.8.2",
     "is-there": "^4.4.4",
     "jimp": "^0.9.3",
